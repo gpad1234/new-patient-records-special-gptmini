@@ -238,6 +238,35 @@ curl -s http://localhost/api/admin/seed-status | jq .
 
 ## Troubleshooting
 
+## Recommended Deploy & Sync Helpers
+
+To reduce drift between GitHub and server checkouts and make handovers safer, this repository now includes a few small helpers:
+
+- `deployment/deploy.sh` — standard deploy helper that fetches origin, pulls a branch, builds the `web` bundle, and reloads nginx. Run this on the server as the deployment user (or root):
+
+```bash
+# on the server
+cd /opt/patient-records
+./deployment/deploy.sh main
+```
+
+- `.env.example` — example environment variables to copy to `.env` on the server (set `PASSWORD_SALT` and any other runtime vars).
+
+- `scripts/sync-check.sh` — quick check to compare local HEAD with `origin/main` to detect mismatches before deploying:
+
+```bash
+# on the server
+./scripts/sync-check.sh /opt/patient-records main
+```
+
+Recommended workflow before deploying:
+1. Push changes to GitHub (`main` or your release branch).
+2. SSH to server and run `./scripts/sync-check.sh /opt/patient-records main` — if it reports `OK`, proceed.
+3. Run `./deployment/deploy.sh main` to deploy, build and reload nginx.
+
+These helpers are intentionally small and shell-based so they are easy for new teams to audit and adapt. For longer term stability, consider adding a CI pipeline that builds the web bundle and publishes artifacts, and a deployment job that pulls and deploys tagged releases.
+
+
 ### Port Already in Use
 
 ```bash
