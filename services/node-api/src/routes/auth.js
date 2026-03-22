@@ -7,7 +7,11 @@ function initAuthRoutes(db) {
   
   // Register new user
   router.post('/register', (req, res) => {
-    const { username, email, password, firstName, lastName, role = 'patient', patientId } = req.body;
+    let { username, email, password, firstName, lastName, role = 'patient', patientId } = req.body;
+
+    // Normalize username/email for case-insensitive handling
+    if (username && typeof username === 'string') username = username.trim().toLowerCase();
+    if (email && typeof email === 'string') email = email.trim().toLowerCase();
     
     if (!username || !email || !password || !firstName || !lastName) {
       return res.status(400).json({ 
@@ -69,7 +73,10 @@ function initAuthRoutes(db) {
   
   // Login
   router.post('/login', (req, res) => {
-    const { username, password } = req.body;
+    let { username, password } = req.body;
+
+    // Normalize username for case-insensitive matching (allow login via email as well)
+    if (username && typeof username === 'string') username = username.trim().toLowerCase();
     
     if (!username || !password) {
       return res.status(400).json({ 
@@ -77,10 +84,11 @@ function initAuthRoutes(db) {
       });
     }
     
+    // Use LOWER() for case-insensitive matching against stored usernames/emails
     const query = `
       SELECT id, username, email, password_hash, first_name, last_name, role, is_active, patient_id
       FROM users 
-      WHERE username = ? OR email = ?
+      WHERE LOWER(username) = ? OR LOWER(email) = ?
     `;
     
     db.get(query, [username, username], (err, user) => {
@@ -90,6 +98,12 @@ function initAuthRoutes(db) {
       }
       
       if (!user) {
+        const details = JSON.stringify({ attemptedUsername: username, userAgent: req.get('User-Agent'), origin: req.get('Origin') || req.get('Referer') || null });
+        console.warn(`⚠ Failed login - user not found: ${username} - ip=${req.ip} ua=${req.get('User-Agent')}`);
+        db.run(
+          'INSERT INTO audit_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)',
+          [null, 'failed_login', details, req.ip]
+        );
         return res.status(401).json({ error: 'Invalid credentials' });
       }
       
@@ -98,6 +112,12 @@ function initAuthRoutes(db) {
       }
       
       if (!verifyPassword(password, user.password_hash)) {
+        const details = JSON.stringify({ attemptedUsername: username, userId: user.id, userAgent: req.get('User-Agent'), origin: req.get('Origin') || req.get('Referer') || null });
+        console.warn(`⚠ Failed login - invalid password for user: ${username} (id=${user.id}) - ip=${req.ip} ua=${req.get('User-Agent')}`);
+        db.run(
+          'INSERT INTO audit_log (user_id, action, details, ip_address) VALUES (?, ?, ?, ?)',
+          [user.id, 'failed_login', details, req.ip]
+        );
         return res.status(401).json({ error: 'Invalid credentials' });
       }
       
@@ -200,6 +220,36 @@ function initAuthRoutes(db) {
       
       res.json(roles);
     });
+  });
+
+  // Admin: fetch recent failed login attempts
+  router.get('/failed-logins', authenticate, (req, res) => {
+    // Only admins allowed
+    if (!req.user || req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const limit = parseInt(req.query.limit, 10) || 50;
+
+    db.all(
+      `SELECT id, user_id, action, details, ip_address, created_at FROM audit_log WHERE action = 'failed_login' ORDER BY created_at DESC LIMIT ?`,
+      [limit],
+      (err, rows) => {
+        if (err) {
+          console.error('Get failed-logins error:', err);
+          return res.status(500).json({ error: 'Failed to fetch failed login attempts' });
+        }
+
+        // Parse details JSON when possible
+        const parsed = (rows || []).map(r => {
+          let details = null;
+          try { details = r.details ? JSON.parse(r.details) : null; } catch (e) { details = r.details; }
+          return { id: r.id, userId: r.user_id, details, ip: r.ip_address, createdAt: r.created_at };
+        });
+
+        res.json(parsed);
+      }
+    );
   });
   
   return router;

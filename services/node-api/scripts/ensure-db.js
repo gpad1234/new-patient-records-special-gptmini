@@ -9,6 +9,20 @@ try {
   if (!fs.existsSync(DB_DIR)) {
     fs.mkdirSync(DB_DIR, { recursive: true });
     console.log(`Created DB directory: ${DB_DIR}`);
+    try {
+      fs.chmodSync(DB_DIR, 0o775);
+      console.log(`Set permissions on DB directory: ${DB_DIR} -> 775`);
+    } catch (e) {
+      console.warn(`Could not set permissions on DB directory: ${e.message}`);
+    }
+  } else {
+    // Ensure directory has group-write permissions so the runtime user can write
+    try {
+      fs.chmodSync(DB_DIR, 0o775);
+      console.log(`Ensured permissions on DB directory: ${DB_DIR} -> 775`);
+    } catch (e) {
+      // Non-fatal
+    }
   }
 
   if (!fs.existsSync(DB_PATH)) {
