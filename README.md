@@ -1,3 +1,81 @@
+# Patient Records - Local Dev Quickstart
+
+Short notes to get a new developer up and running and to explain recent guardrails added to prevent common startup failures.
+
+## Quick start (WSL2 / Linux)
+
+Prereqs: Node 20+, npm, sqlite3, Python 3
+
+1. Ensure Node API DB exists and start the API
+
+```bash
+cd services/node-api
+# install deps
+npm install
+# ensure DB file/dir is created and schema applied (predev hook runs this automatically)
+node scripts/ensure-db.js
+# start in dev
+npm run dev
+```
+
+2. Start the Web UI
+
+```bash
+cd web
+npm install
+npm run dev
+# open http://localhost:3000
+```
+
+3. Optional: start Python service (if used)
+
+```bash
+python3 services/python-service/src/app.py
+```
+
+## Health checks & demo login
+
+Check API health:
+
+```bash
+curl http://localhost:3001/api/health
+```
+
+Demo credentials (seeded in `data/auth_and_appointments.sql`):
+- user: `admin` / password: `password123`
+
+Login test (curl):
+
+```bash
+curl -i -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"password123"}'
+```
+
+## What we changed to avoid the earlier startup problems
+
+- `services/node-api/scripts/ensure-db.js` — creates DB directory/file and applies initial schema if DB is empty.
+- `services/node-api/src/server.js` — now ensures DB dir/file exist and opens SQLite with create flags; `app.listen` runs only when executed directly.
+- `services/node-api/package.json` — `predev` and `prestart` hooks call `ensure-db.js` so starting the server is resilient.
+- `web/index.html` — local-dev Content Security Policy relaxed so Vite/react-refresh can load during development.
+- `.github/workflows/ci.yml` — CI smoke-test that ensures DB and verifies `/api/health`.
+
+These are documented in `FIXERUPPER.md`.
+
+## Troubleshooting
+
+- SQLITE_CANTOPEN: ensure `services/node-api/data/diabetes.db` exists and is writable. Run `node services/node-api/scripts/ensure-db.js`.
+- CSP script blocked in browser: for local development `web/index.html` contains a relaxed CSP; do not use this in production.
+- 401 Unauthorized on login: ensure demo user exists in DB and password hash matches server hashing. Use the provided login curl to verify.
+
+## Security notes
+
+- The project currently uses a simple SHA256-based hash helper for demo purposes. For production, migrate to `bcrypt` or `argon2` and use proper JWTs.
+- Tighten CSP, remove dev-only relaxations, and ensure secrets (env) are set in CI/CD and not checked into the repo.
+
+---
+
+If you want, I can add a short `CONTRIBUTING.md` or a developer `scripts/` helper list. 
 # PatientRecords - Healthcare AI Agent
 
 Agentic healthcare system using Model Context Protocol (MCP) servers for intelligent clinical decision support.
