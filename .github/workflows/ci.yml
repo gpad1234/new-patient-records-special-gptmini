@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  node-api-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Node API dependencies
+        working-directory: services/node-api
+        run: npm ci
+
+      - name: Ensure DB exists
+        working-directory: services/node-api
+        run: node scripts/ensure-db.js
+
+      - name: Start Node API (background)
+        working-directory: services/node-api
+        run: |
+          nohup npm start > api.log 2>&1 &
+
+      - name: Wait for API and Smoke Test
+        run: |
+          for i in $(seq 1 20); do
+            if curl -sS http://localhost:3001/api/health >/dev/null 2>&1; then
+              echo "API is up"; break
+            fi
+            echo "Waiting for API... ($i)";
+            sleep 1
+          done
+          curl --fail http://localhost:3001/api/health
