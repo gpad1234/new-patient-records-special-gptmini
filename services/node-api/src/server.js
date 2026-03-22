@@ -18,12 +18,20 @@ app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://localhost:3002',
-    'http://127.0.0.1:3002',
+const DB_PATH = process.env.DATABASE_URL || path.join(__dirname, '../data/diabetes.db');
+
+// Ensure DB directory exists and file is creatable before opening
     'http://127.0.0.1:3000'
   ],
   credentials: true,
 }));
 app.use(express.json());
+
+// Simple request logger to aid debugging (prints method and path)
+app.use((req, res, next) => {
+  console.log(`→ [REQ] ${req.method} ${req.url}`);
+  next();
+});
 
 // Initialize SQLite Database
 const db = new sqlite3.Database(DB_PATH, (err) => {
@@ -694,10 +702,12 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Diabetes EMR API is running' });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`✓ Diabetes EMR API running on http://localhost:${PORT}`);
-  console.log(`✓ Database: ${DB_PATH}`);
-});
+// Start server only when run directly (prevents listen on require)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`✓ Diabetes EMR API running on http://localhost:${PORT}`);
+    console.log(`✓ Database: ${DB_PATH}`);
+  });
+}
 
 module.exports = app;
