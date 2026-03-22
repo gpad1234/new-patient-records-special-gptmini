@@ -14,13 +14,11 @@ const PORT = process.env.PORT || 3001;
 const DB_PATH = process.env.DATABASE_URL || path.join(__dirname, '../data/diabetes.db');
 
 // Middleware
+// Middleware
 app.use(cors({
   origin: [
     'http://localhost:3000',
     'http://localhost:3002',
-const DB_PATH = process.env.DATABASE_URL || path.join(__dirname, '../data/diabetes.db');
-
-// Ensure DB directory exists and file is creatable before opening
     'http://127.0.0.1:3000'
   ],
   credentials: true,
