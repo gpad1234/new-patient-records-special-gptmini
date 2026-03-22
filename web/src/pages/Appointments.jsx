@@ -24,7 +24,7 @@ export default function Appointments() {
   const fetchAppointments = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:3001/api/appointments', {
+      const response = await fetch('/api/appointments', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -43,7 +43,7 @@ export default function Appointments() {
 
   const fetchPatients = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/patients')
+      const response = await fetch('/api/patients')
       if (response.ok) {
         const data = await response.json()
         setPatients(data)
@@ -56,7 +56,7 @@ export default function Appointments() {
   const fetchProviders = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:3001/api/auth/roles', {
+      const response = await fetch('/api/auth/roles', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -95,7 +95,7 @@ export default function Appointments() {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:3001/api/appointments/${appointmentId}/cancel`, {
+      const response = await fetch(`/api/appointments/${appointmentId}/cancel`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -274,7 +274,7 @@ function NewAppointmentModal({ patients, providers, onClose, onSuccess }) {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:3001/api/appointments', {
+      const response = await fetch('/api/appointments', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
