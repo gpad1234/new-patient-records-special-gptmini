@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const API_BASE_URL = import.meta.env.VITE_API_URL || ''
 
 class PatientAPI {
   // Check API health
@@ -13,7 +13,7 @@ class PatientAPI {
 
   // Get all patients
   static async getAllPatients() {
-    const response = await fetch(`${API_BASE_URL}/patients`)
+    const response = await fetch(`${API_BASE_URL}/api/patients`)
     if (!response.ok) throw new Error('Failed to fetch patients')
     return response.json()
   }
@@ -28,28 +28,28 @@ class PatientAPI {
 
   // Get single patient with full medical records
   static async getPatient(id) {
-    const response = await fetch(`${API_BASE_URL}/patients/${id}`)
+    const response = await fetch(`${API_BASE_URL}/api/patients/${id}`)
     if (!response.ok) throw new Error('Failed to fetch patient')
     return response.json()
   }
 
   // Get patient medical records
   static async getPatientRecords(id) {
-    const response = await fetch(`${API_BASE_URL}/patients/${id}/records`)
+    const response = await fetch(`${API_BASE_URL}/api/patients/${id}/records`)
     if (!response.ok) throw new Error('Failed to fetch patient records')
     return response.json()
   }
 
   // Get patient prescriptions
   static async getPatientPrescriptions(id) {
-    const response = await fetch(`${API_BASE_URL}/patients/${id}/prescriptions`)
+    const response = await fetch(`${API_BASE_URL}/api/patients/${id}/prescriptions`)
     if (!response.ok) throw new Error('Failed to fetch prescriptions')
     return response.json()
   }
 
   // Get patient labs
   static async getPatientLabs(id) {
-    const response = await fetch(`${API_BASE_URL}/patients/${id}/labs`)
+    const response = await fetch(`${API_BASE_URL}/api/patients/${id}/labs`)
     if (!response.ok) throw new Error('Failed to fetch lab results')
     return response.json()
   }
