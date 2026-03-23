@@ -7,6 +7,22 @@ WEB_PORT=${WEB_PORT:-3000}
 
 echo "Starting local stack: API -> http://127.0.0.1:${API_PORT}, Web -> http://localhost:${WEB_PORT}"
 
+# Show today's journal and prompt for confirmation unless SKIP_JOURNAL is set
+if [ "${SKIP_JOURNAL:-}" != "1" ]; then
+  if [ -f "$ROOT/JOURNAL.md" ]; then
+    echo
+    echo "===== Please read today's JOURNAL before proceeding ====="
+    echo
+    sed -n '1,200p' "$ROOT/JOURNAL.md" || true
+    echo
+    read -r -p "Continue starting local stack? (y/N): " __ANS
+    if [ "${__ANS,,}" != "y" ]; then
+      echo "Aborted by user. Set SKIP_JOURNAL=1 to bypass this prompt.";
+      exit 1
+    fi
+  fi
+fi
+
 # Start read-only API
 pkill -f read_only_viewer.py || true
 sleep 0.2
