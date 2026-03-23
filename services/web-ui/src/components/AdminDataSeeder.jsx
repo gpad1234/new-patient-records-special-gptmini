@@ -69,6 +69,38 @@ export default function AdminDataSeeder() {
     }
   };
 
+  const [file, setFile] = useState(null);
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const handleImport = async () => {
+    if (!file) return setMessage('Please select a CSV or ZIP file to import');
+    setLoading(true);
+    setMessage('');
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const response = await fetch(`/api/admin/import-csv`, {
+        method: 'POST',
+        body: fd,
+      });
+      const data = await response.json();
+      if (data.success) {
+        setMessage(`✓ Imported ${data.inserted} patients`);
+        setTimeout(() => { window.location.href = '/patients'; }, 1200);
+      } else {
+        setMessage('Error: ' + (data.error || 'Import failed'));
+      }
+    } catch (err) {
+      setMessage('Error: ' + err.message);
+    } finally {
+      setLoading(false);
+      checkStatus();
+    }
+  };
+
   return (
     <div className="admin-seeder">
       <h1>🔬 Test Data Manager</h1>
@@ -119,6 +151,17 @@ export default function AdminDataSeeder() {
               {loading ? 'Clearing...' : '🗑️ Clear All Data'}
             </button>
           )}
+        </div>
+
+        <div className="import-card">
+          <h3>Import Synthea / CSV</h3>
+          <p>Upload a Synthea ZIP or a Patients CSV to bulk import patient demographics.</p>
+          <input type="file" accept=".csv,.zip" onChange={handleFileChange} disabled={loading} />
+          <div style={{marginTop: '8px'}}>
+            <button onClick={handleImport} disabled={loading || !file} className="btn-secondary">
+              {loading ? 'Importing...' : 'Import CSV/ZIP'}
+            </button>
+          </div>
         </div>
 
         {message && (

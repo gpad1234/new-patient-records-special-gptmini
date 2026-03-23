@@ -30,9 +30,19 @@ export default function Appointments() {
         }
       })
 
+      const text = await response.text()
+      let data = {}
+      try {
+        data = text ? JSON.parse(text) : {}
+      } catch (err) {
+        console.error('Invalid server response for appointments:', text)
+        throw new Error('Invalid server response')
+      }
+
       if (response.ok) {
-        const data = await response.json()
-        setAppointments(data)
+        setAppointments(Array.isArray(data) ? data : [])
+      } else {
+        console.error('Error fetching appointments:', response.status, data)
       }
     } catch (error) {
       console.error('Error fetching appointments:', error)
@@ -44,9 +54,19 @@ export default function Appointments() {
   const fetchPatients = async () => {
     try {
       const response = await fetch('/api/patients')
+      const text = await response.text()
+      let data = {}
+      try {
+        data = text ? JSON.parse(text) : {}
+      } catch (err) {
+        console.error('Invalid server response for patients:', text)
+        throw new Error('Invalid server response')
+      }
+
       if (response.ok) {
-        const data = await response.json()
-        setPatients(data)
+        setPatients(Array.isArray(data) ? data : [])
+      } else {
+        console.error('Error fetching patients:', response.status, data)
       }
     } catch (error) {
       console.error('Error fetching patients:', error)

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Lock, Mail, User, AlertCircle } from 'lucide-react'
 
@@ -25,7 +25,15 @@ export default function Login() {
         body: JSON.stringify(formData)
       })
 
-      const data = await response.json()
+      // Defensive parse: backend may sometimes return empty or non-JSON on error
+      const text = await response.text()
+      let data = {}
+      try {
+        data = text ? JSON.parse(text) : {}
+      } catch (e) {
+        console.error('Non-JSON login response:', text)
+        throw new Error('Invalid server response')
+      }
 
       if (!response.ok) {
         throw new Error(data.error || 'Login failed')
@@ -62,6 +70,18 @@ export default function Login() {
       receptionist: { username: 'receptionist', password: 'password123' }
     }
     setFormData(credentials[role])
+  }
+
+  // Dev-only auto-login: sets a lightweight dev token and user
+  const autoDevLogin = () => {
+    try {
+      localStorage.setItem('token', 'dev')
+      localStorage.setItem('user', JSON.stringify({ username: 'dev', role: 'developer' }))
+      navigate('/')
+      window.location.reload()
+    } catch (e) {
+      console.error('Dev auto-login failed', e)
+    }
   }
 
   return (
@@ -162,6 +182,17 @@ export default function Login() {
               </button>
             </div>
             <p className="text-xs text-gray-500 mt-2">All demo passwords: password123</p>
+            {import.meta.env.DEV && (
+              <div className="mt-3">
+                <button
+                  onClick={autoDevLogin}
+                  className="text-xs px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                >
+                  Auto login (dev)
+                </button>
+                <p className="text-xs text-gray-500 mt-2">Dev-only quick login — not shown in production</p>
+              </div>
+            )}
           </div>
 
           {/* Register Link */}

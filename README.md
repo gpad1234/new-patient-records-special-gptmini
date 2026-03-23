@@ -75,6 +75,27 @@ These are documented in `FIXERUPPER.md`.
 
 ---
 
+## Important Notes — Deploy & Sync
+
+To avoid mismatches between GitHub and a running server and to make handover safer, this repo now includes a few small helpers and recommended steps:
+
+- `scripts/sync-check.sh` — run on the server to confirm the checked-out commit matches `origin/main` before deploying.
+- `deployment/deploy.sh` — standardized deploy helper (fetch, pull, `npm ci`, `npm run build`, reload `nginx`). Run this on the server as the deploy user.
+- `.env.example` — example runtime variables (copy to `.env` on the server and set a secure `PASSWORD_SALT`); do NOT commit `.env`.
+- CI: `.github/workflows/build-web.yml` builds `web/dist` on push and uploads the artifact for inspection or release.
+
+Quick server workflow (recommended):
+
+```bash
+# on the server
+cd /opt/patient-records
+./scripts/sync-check.sh /opt/patient-records main
+./deployment/deploy.sh main
+```
+
+These helpers are minimal and intentionally shell-based so they are easy to audit and adapt. For stronger guarantees, use CI-built artifacts and an automated deploy job that pulls tagged releases.
+
+
 If you want, I can add a short `CONTRIBUTING.md` or a developer `scripts/` helper list. 
 # PatientRecords - Healthcare AI Agent
 

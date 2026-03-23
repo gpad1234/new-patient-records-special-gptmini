@@ -1103,3 +1103,13 @@
     border: 1px solid #ddd;
   }
 }
+
+/* Minimal toggle helper: hide AI research UI when disabled */
+.ai-research-disabled {
+  display: none !important;
+  visibility: hidden !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}

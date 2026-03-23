@@ -186,16 +186,20 @@ ssh ${SSH_OPTS} ${SERVER} << 'EOF'
     npm install
     npm run build
     
-    # Build AI research services if they exist
-    if [ -d /opt/emr/services/mcp-node-research ]; then
+    # Build AI research services if they exist and are not frozen
+    if [ -d /opt/emr/services/mcp-node-research ] && [ ! -f /opt/emr/services/mcp-node-research/.FROZEN ] && [ ! -f /opt/emr/services/mcp-node-research/.ARCHIVED ]; then
         echo "Installing AI research Node.js dependencies..."
         cd /opt/emr/services/mcp-node-research
         npm install
+    else
+        echo "Skipping mcp-node-research (frozen or not present)"
     fi
     
-    if [ -f /opt/emr/services/mcp-python-research/requirements.txt ]; then
+    if [ -f /opt/emr/services/mcp-python-research/requirements.txt ] && [ ! -f /opt/emr/services/mcp-python-research/.FROZEN ] && [ ! -f /opt/emr/services/mcp-python-research/.ARCHIVED ]; then
         echo "Installing AI research Python dependencies..."
         pip3 install -r /opt/emr/services/mcp-python-research/requirements.txt || true
+    else
+        echo "Skipping mcp-python-research (frozen or not present)"
     fi
     
     if [ -f /opt/emr/services/mcp-go-research/main.go ]; then
@@ -291,7 +295,7 @@ WantedBy=multi-user.target
 API_SERVICE
 
     # Create systemd services for AI research (optional)
-    if [ -f /opt/emr/services/mcp-node-research/server.js ]; then
+    if [ -f /opt/emr/services/mcp-node-research/server.js ] && [ ! -f /opt/emr/services/mcp-node-research/.FROZEN ] && [ ! -f /opt/emr/services/mcp-node-research/.ARCHIVED ]; then
         cat > /etc/systemd/system/ai-research-node.service << 'NODE_SERVICE'
 [Unit]
 Description=AI Research Node.js MCP Server
@@ -312,7 +316,7 @@ WantedBy=multi-user.target
 NODE_SERVICE
     fi
 
-    if [ -f /opt/emr/services/mcp-python-research/main.py ]; then
+    if [ -f /opt/emr/services/mcp-python-research/main.py ] && [ ! -f /opt/emr/services/mcp-python-research/.FROZEN ] && [ ! -f /opt/emr/services/mcp-python-research/.ARCHIVED ]; then
         cat > /etc/systemd/system/ai-research-python.service << 'PYTHON_SERVICE'
 [Unit]
 Description=AI Research Python MCP Server

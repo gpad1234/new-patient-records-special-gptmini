@@ -208,3 +208,34 @@ pip install -r requirements.txt --force-reinstall
 - SQL injection prevention via SQLAlchemy ORM
 - CORS configuration for API access
 - Environment-based secrets management
+
+## Diabetes Clinic Quickstart (SQLite)
+
+This repository contains a small helper to initialize a project-local SQLite database for the diabetes clinic pilot.
+
+1. Create the virtualenv and install dependencies (recommended `.venv`):
+
+```bash
+# create and use project-local .venv
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+2. Initialize the SQLite database used by the clinic UI:
+
+```bash
+python src/init_db.py
+```
+
+This will create `data/diabetes.db` with basic tables (`patients`, `medical_records`, `lab_results`, `prescriptions`) and sample data.
+
+3. Start the service (it will pick up `data/diabetes.db` automatically):
+
+```bash
+python src/app.py
+```
+
+4. Point the React UI to this service (development): add a `proxy` entry in `services/web-ui/package.json` or configure the dev server to forward `/api` to the Python service (default port `5000`).
+
+If you want me to add the `proxy` field and a docker-compose service for a minimal two-container dev setup (React + Python/SQLite), I can scaffold that next.

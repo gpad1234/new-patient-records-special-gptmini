@@ -24,6 +24,10 @@ REACT_APP_API_URL=http://localhost:3001
 - 📊 Diabetes records tracking
 - 📱 Responsive design
 
+## Minimal UI mode
+
+This repo includes a minimal pilot mode with research and DICOM features disabled by default. To enable research UI (if services are running), edit `src/config.js` and set `SHOW_RESEARCH` / `SHOW_DICOM` to `true`.
+
 ## Scripts
 
 ```bash

@@ -10,17 +10,32 @@ export default function HospitalDashboard({ patients }) {
 
   const fetchStats = async () => {
     try {
+      // Prefer backend stats; fall back to global window cache set by App.jsx
       const response = await fetch(`/api/hospital/stats`);
-      const data = await response.json();
+      const data = response.ok ? await response.json() : window.__HOSPITAL_STATS || null;
       setStats(data);
     } catch (error) {
       console.error('Error fetching stats:', error);
+      setStats(window.__HOSPITAL_STATS || null);
     } finally {
       setLoading(false);
     }
   };
 
   if (loading) return <div>Loading dashboard...</div>;
+
+  // If backend stats are missing or empty, derive lightweight stats from `patients` prop
+  const derivedStats = {
+    totalPatients: patients?.length || 0,
+    recordsCount: stats?.recordsCount || 0,
+    diabetesTypes: {}
+  };
+  if ((!stats || !stats.totalPatients) && patients && patients.length > 0) {
+    patients.forEach(p => {
+      const t = p.diabetesType || 'Unknown';
+      derivedStats.diabetesTypes[t] = (derivedStats.diabetesTypes[t] || 0) + 1;
+    });
+  }
 
   return (
     <div className="hospital-dashboard">
@@ -29,7 +44,7 @@ export default function HospitalDashboard({ patients }) {
       <div className="stats-grid">
         <div className="stat-card">
           <h3>Total Patients</h3>
-          <p className="stat-number">{stats?.totalPatients || 0}</p>
+          <p className="stat-number">{(stats && stats.totalPatients) ? stats.totalPatients : derivedStats.totalPatients}</p>
         </div>
         
         <div className="stat-card">
@@ -40,7 +55,7 @@ export default function HospitalDashboard({ patients }) {
         <div className="stat-card">
           <h3>Diabetes Types</h3>
           <ul>
-            {stats?.diabetesTypes && Object.entries(stats.diabetesTypes).map(([type, count]) => (
+            {((stats && stats.diabetesTypes) ? Object.entries(stats.diabetesTypes) : Object.entries(derivedStats.diabetesTypes)).map(([type, count]) => (
               <li key={type}>{type}: {count}</li>
             ))}
           </ul>

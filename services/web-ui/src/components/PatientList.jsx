@@ -15,16 +15,38 @@ export default function PatientList({ loading, onRefresh }) {
   const fetchPatients = async (page) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/patients/paginated?page=${page}&limit=${ITEMS_PER_PAGE}`);
-      const result = await response.json();
-      setPatients(result.data || []);
-      setPagination(result.pagination || {});
+      // Try paginated endpoint first (new API). If missing, fall back to simple list and normalize.
+      let response = await fetch(`/api/patients/paginated?page=${page}&limit=${ITEMS_PER_PAGE}`);
+      if (!response.ok) {
+        response = await fetch(`/api/patients`);
+        const list = await response.json();
+        const normalized = (list || []).map(normalizePatient);
+        setPatients(normalized);
+        setPagination({ total: normalized.length, totalPages: 1, hasPrevPage: false, hasNextPage: false });
+      } else {
+        const result = await response.json();
+        setPatients((result.data || []).map(normalizePatient));
+        setPagination(result.pagination || {});
+      }
     } catch (error) {
       console.error('Error fetching patients:', error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Normalize backend patient object to frontend expected shape
+  const normalizePatient = (p) => ({
+    id: p.id,
+    firstName: p.first_name || p.firstName || '',
+    lastName: p.last_name || p.lastName || '',
+    mrn: p.nhs_number || p.mrn || '',
+    email: p.email || '',
+    diabetesType: p.diabetes_type || p.diabetesType || '',
+    glucoseRecords: p.glucose_records || p.glucoseRecords || 0,
+    labResults: p.lab_results || p.labResults || 0,
+    medications: p.medications || 0,
+  });
 
   const handlePageChange = (newPage) => {
     setCurrentPage(newPage);

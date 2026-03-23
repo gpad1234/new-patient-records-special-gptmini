@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import config from '../config';
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -26,9 +27,17 @@ export default function Navigation() {
         <ul className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
           <li><Link to="/" onClick={closeMenu}>Dashboard</Link></li>
           <li><Link to="/patients" onClick={closeMenu}>Patients</Link></li>
-          <li><Link to="/patients/new" onClick={closeMenu}>Add Patient</Link></li>
-          <li><Link to="/research/ai" onClick={closeMenu}>🧠 AI Research</Link></li>
-          <li><Link to="/predictions/ai" onClick={closeMenu}>🤖 AI Predictions</Link></li>
+          {config.ALLOW_ADD_PATIENT ? (
+            <li><Link to="/patients/new" onClick={closeMenu}>Add Patient</Link></li>
+          ) : (
+            <li><Link to="/admin/seed" onClick={closeMenu}>Import / Test Data</Link></li>
+          )}
+          {config.SHOW_RESEARCH && (
+            <>
+              <li><Link to="/research/ai" onClick={closeMenu}>🧠 AI Research</Link></li>
+              <li><Link to="/predictions/ai" onClick={closeMenu}>🤖 AI Predictions</Link></li>
+            </>
+          )}
           <li><Link to="/admin/seed" onClick={closeMenu}>📊 Test Data</Link></li>
         </ul>
       </div>

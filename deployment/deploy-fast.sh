@@ -15,12 +15,17 @@ echo ""
 # 1. Create deployment archive
 echo "[1/4] Creating archive..."
 cd ${LOCAL_DIR}
-tar -czf /tmp/emr-quick.tar.gz \
-    --exclude='node_modules' \
-    --exclude='build' \
-    --exclude='.git' \
-    --exclude='target' \
-    services/ web/ scripts/ ai-research-dashboard.html nginx.conf
+
+# Build dynamic exclude args for frozen services
+EXCLUDE_ARGS=("--exclude='node_modules'" "--exclude='build'" "--exclude='.git'" "--exclude='target'")
+for svc in services/*; do
+    if [ -f "${svc}/.FROZEN" ] || [ -f "${svc}/.ARCHIVED" ]; then
+        EXCLUDE_ARGS+=("--exclude='${svc}'")
+        echo "Excluding frozen/archived service from archive: ${svc}"
+    fi
+done
+
+eval tar -czf /tmp/emr-quick.tar.gz "${EXCLUDE_ARGS[@]}" services/ web/ scripts/ ai-research-dashboard.html nginx.conf
 
 # 2. Upload
 echo "[2/4] Uploading..."
@@ -50,9 +55,11 @@ ssh -i ${SSH_KEY} ${SERVER} 'bash -s' << 'ENDSSH'
     cd services/node-api && npm install --production --silent
     cd ../web-ui && npm install --silent && npm run build --silent
     
-    # Build AI research services if they exist
-    if [ -d ../mcp-node-research ]; then
+    # Build AI research services if they exist and are not frozen/archived
+    if [ -d ../mcp-node-research ] && [ ! -f ../mcp-node-research/.FROZEN ] && [ ! -f ../mcp-node-research/.ARCHIVED ]; then
         cd ../mcp-node-research && npm install --silent
+    else
+        echo "Skipping mcp-node-research (frozen/archived or not present)"
     fi
     
     echo "✓ Build complete"
