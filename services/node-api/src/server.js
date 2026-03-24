@@ -1,3 +1,7 @@
+// Simple in-memory cache for /api/patients
+let patientsCache = null;
+let patientsCacheTime = 0;
+const PATIENTS_CACHE_TTL = 30 * 1000; // 30 seconds
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
@@ -250,6 +254,10 @@ app.use('/api/appointments', initAppointmentRoutes(db));
 
 // Get all patients with record counts
 app.get('/api/patients', (req, res) => {
+  const now = Date.now();
+  if (patientsCache && (now - patientsCacheTime < PATIENTS_CACHE_TTL)) {
+    return res.json(patientsCache);
+  }
   db.all(`
     SELECT p.*, 
       COUNT(DISTINCT g.id) as glucoseRecords,
@@ -260,12 +268,16 @@ app.get('/api/patients', (req, res) => {
     LEFT JOIN lab_results l ON p.id = l.patientId
     LEFT JOIN medications m ON p.id = m.patientId
     GROUP BY p.id
-    ORDER BY p.createdAt DESC
+    ORDER BY p.id DESC
+    LIMIT 15
   `, (err, rows) => {
     if (err) {
+      console.error('Error in /api/patients:', err);
       return res.status(500).json({ error: err.message });
     }
-    res.json(rows || []);
+    patientsCache = rows || [];
+    patientsCacheTime = Date.now();
+    res.json(patientsCache);
   });
 });
 
@@ -349,12 +361,31 @@ app.get('/api/patients/:id', (req, res) => {
     if (err) return res.status(500).json({ error: err.message });
     if (!patient) return res.status(404).json({ error: 'Patient not found' });
 
-    // Fetch all medical records in parallel
     db.all('SELECT * FROM glucose_records WHERE patientId = ? ORDER BY recordedAt DESC', [id], (err, glucose) => {
+      if (err) {
+        console.error('Error fetching glucose records:', err);
+        return res.status(500).json({ error: 'Error fetching glucose records: ' + err.message });
+      }
       db.all('SELECT * FROM lab_results WHERE patientId = ? ORDER BY resultDate DESC', [id], (err, labs) => {
+        if (err) {
+          console.error('Error fetching lab results:', err);
+          return res.status(500).json({ error: 'Error fetching lab results: ' + err.message });
+        }
         db.all('SELECT * FROM medications WHERE patientId = ? ORDER BY startDate DESC', [id], (err, meds) => {
+          if (err) {
+            console.error('Error fetching medications:', err);
+            return res.status(500).json({ error: 'Error fetching medications: ' + err.message });
+          }
           db.all('SELECT * FROM diagnoses WHERE patientId = ? ORDER BY onsetDate DESC', [id], (err, diagnoses) => {
+            if (err) {
+              console.error('Error fetching diagnoses:', err);
+              return res.status(500).json({ error: 'Error fetching diagnoses: ' + err.message });
+            }
             db.all('SELECT * FROM allergies WHERE patientId = ? ORDER BY recordedDate DESC', [id], (err, allergies) => {
+              if (err) {
+                console.error('Error fetching allergies:', err);
+                return res.status(500).json({ error: 'Error fetching allergies: ' + err.message });
+              }
               res.json({
                 ...patient,
                 medicalRecords: {

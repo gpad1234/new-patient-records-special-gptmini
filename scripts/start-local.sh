@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 API_PORT=${API_PORT:-5002}
 WEB_PORT=${WEB_PORT:-3000}
 
-echo "Starting local stack: API -> http://127.0.0.1:${API_PORT}, Web -> http://localhost:${WEB_PORT}"
+echo "Starting local stack: API -> http://localhost:${API_PORT}, Web -> http://localhost:${WEB_PORT}"
 
 # Show today's journal and prompt for confirmation unless SKIP_JOURNAL is set
 if [ "${SKIP_JOURNAL:-}" != "1" ]; then
@@ -27,7 +27,23 @@ fi
 pkill -f read_only_viewer.py || true
 sleep 0.2
 cd "$ROOT"
-nohup env PORT=$API_PORT python3 read_only_viewer.py &>/tmp/read_only_viewer.log &
+# Ensure services/data points to node-api data for viewer compatibility
+if [ ! -e "$ROOT/services/data" ]; then
+  if [ -d "$ROOT/services/node-api/data" ]; then
+    ln -s "$ROOT/services/node-api/data" "$ROOT/services/data" && echo "Created symlink services/data -> services/node-api/data"
+  else
+    mkdir -p "$ROOT/services/data"
+  fi
+fi
+
+# If node-api's diabetes DB is missing, attempt to initialize it (idempotent)
+if [ ! -f "$ROOT/services/node-api/data/diabetes.db" ]; then
+  if [ -x "$ROOT/scripts/init-auth-db.sh" ]; then
+    echo "Initializing node-api diabetes DB..."
+    bash "$ROOT/scripts/init-auth-db.sh" || true
+  fi
+fi
+nohup env PORT=$API_PORT HOST=localhost python3 read_only_viewer.py &>/tmp/read_only_viewer.log &
 API_PID=$!
 echo "API started (PID $API_PID) — logs: /tmp/read_only_viewer.log"
 
@@ -38,7 +54,7 @@ if [ ! -d node_modules ]; then
   npm ci
 fi
 pkill -f 'vite' || true
-nohup env PORT=$WEB_PORT VITE_API_URL=http://127.0.0.1:$API_PORT npm run dev &>/tmp/web-dev.log &
+nohup env PORT=$WEB_PORT VITE_API_URL=http://localhost:$API_PORT npm run dev &>/tmp/web-dev.log &
 WEB_PID=$!
 echo "Web dev started (PID $WEB_PID) — logs: /tmp/web-dev.log"
 

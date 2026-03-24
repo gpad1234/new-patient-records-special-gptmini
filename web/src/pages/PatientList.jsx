@@ -29,13 +29,13 @@ export default function PatientList() {
         const data = await PatientAPI.getAllPatients()
         const formattedPatients = data.map(p => ({
           id: p.id,
-          // support snake_case and camelCase from different backends
-          name: `${p.first_name || p.firstName || ''} ${p.last_name || p.lastName || ''}`.trim(),
-          age: calculateAge(p.date_of_birth || p.dateOfBirth),
-          status: p.status || p.status || 'Active',
+          // Use name field directly if present, else try to construct from first/last name
+          name: p.name || `${p.first_name || p.firstName || ''} ${p.last_name || p.lastName || ''}`.trim(),
+          age: calculateAge(p.dob || p.date_of_birth || p.dateOfBirth),
+          status: p.status || 'Active',
           lastVisit: (p.updated_at || p.updatedAt || '').split('T')[0] || new Date().toISOString().split('T')[0],
           unit: p.diabetesType || p.diabetes_type || 'General',
-          physician: 'Dr. Smith'
+          physician: p.physician || 'N/A'
         }))
         setPatients(formattedPatients)
         setUseAPI(true)
