@@ -1,10 +1,9 @@
 name: CI
 
+# Disabled automatic triggers to stop unintended runs/emails.
+# Use the manual workflow dispatch to run this job when needed.
 on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   node-api-smoke:
