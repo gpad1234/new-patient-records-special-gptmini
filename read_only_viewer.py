@@ -104,6 +104,31 @@ def app(environ, start_response):
     db_choice = qs.get('db', ['main'])[0]
     db_path = DB_MAIN if db_choice == 'main' else DB_DIABETES
 
+    # Health endpoint for CI and monitoring
+    if path == '/api/health' or path == '/health':
+        def safe_count(path):
+            conn = get_conn(path)
+            if conn is None:
+                return None
+            try:
+                cur = conn.cursor()
+                cur.execute('SELECT COUNT(*) as c FROM patients')
+                r = cur.fetchone()
+                return int(r['c']) if r else 0
+            except Exception:
+                return None
+            finally:
+                conn.close()
+
+        health = {
+            'status': 'ok',
+            'db_main_exists': DB_MAIN.exists(),
+            'db_diabetes_exists': DB_DIABETES.exists(),
+            'patients_in_main': safe_count(DB_MAIN),
+            'patients_in_diabetes': safe_count(DB_DIABETES),
+        }
+        return json_response(start_response, '200 OK', health)
+
     # UI
     if path == '/ui':
         html = ui_page()
@@ -129,7 +154,7 @@ def app(environ, start_response):
 if __name__ == '__main__':
     import os
     port = int(os.environ.get('PORT', '5002'))
-    host = os.environ.get('HOST', '127.0.0.1')
+    host = os.environ.get('HOST', 'localhost')
     with make_server(host, port, app) as httpd:
         print(f'Read-only patient viewer running on http://{host}:{port}')
         httpd.serve_forever()
