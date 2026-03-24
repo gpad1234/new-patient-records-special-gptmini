@@ -44,3 +44,25 @@ How to skip this prompt in scripts: set `SKIP_JOURNAL=1` in your environment.
 
 ----
 Authored-by: automated-assistant (pair-programming session)
+
+---
+
+**Deployment checklist — 2026-03-24**
+
+- **SSH keys**: Ensure the Mac has the deploy SSH key and it's added to `ssh-agent` and GitHub.
+- **Remote access**: Verify sudo access on the droplet and firewall allows SSH, HTTP/HTTPS, and app ports.
+- **Runtime versions**: Match Node/Python/Java versions on Mac and droplet (use `nvm`, `pyenv`, SDKMAN). Verify with `node -v` / `python --version`.
+- **Architecture & builds**: For Apple Silicon, build artifacts for Linux compatibility (use Docker or `docker buildx`).
+- **Build vs server**: Decide whether to `npm run build` locally and upload, or build on the droplet with correct runtimes.
+- **Docker option**: If using Docker, build Linux images on Mac (`docker buildx`) and push to a registry, then pull on the droplet.
+- **Env vars / secrets**: Confirm production `.env` values and do not commit secrets; use droplet env or a secret store.
+- **Process manager**: Prepare `systemd` unit, `pm2`, or Docker Compose configs for running services and logs.
+- **Nginx / reverse proxy**: Prepare `nginx.conf` for upstreams, TLS termination, and websocket headers.
+- **TLS / DNS**: Ensure DNS points to the droplet and be ready to issue Let's Encrypt certs (certbot).
+- **DB & file permissions**: Set correct ownership and permissions for DB/storage on the droplet; avoid committing DB WAL/SHM to git.
+- **.gitignore**: Consider adding `services/node-api/data/*.db*` to `.gitignore` and untracking DB WAL/SHM files.
+- **Backups & migrations**: Backup DBs and ensure migration scripts run correctly on the droplet.
+- **Monitoring & health checks**: Add basic monitoring/logging and a health endpoint for smoke tests.
+- **Smoke tests**: After deploy, run `curl` health endpoint, verify UI, and perform sample API calls.
+
+Authored-by: automated-assistant (pair-programming session)
