@@ -24,24 +24,23 @@ export default function PatientList() {
     try {
       setLoading(true)
       
-      // Try to fetch from API first
-      const isAPIAvailable = await PatientAPI.checkHealth()
-      
-      if (isAPIAvailable) {
+      // Try to fetch live data from API; fall back to mock only on error
+      try {
         const data = await PatientAPI.getAllPatients()
         const formattedPatients = data.map(p => ({
           id: p.id,
-          name: `${p.first_name} ${p.last_name}`,
-          age: calculateAge(p.date_of_birth),
-          status: p.status || 'Active',
-          lastVisit: p.updated_at?.split('T')[0] || new Date().toISOString().split('T')[0],
-          unit: p.diabetesType || 'General',
+          // support snake_case and camelCase from different backends
+          name: `${p.first_name || p.firstName || ''} ${p.last_name || p.lastName || ''}`.trim(),
+          age: calculateAge(p.date_of_birth || p.dateOfBirth),
+          status: p.status || p.status || 'Active',
+          lastVisit: (p.updated_at || p.updatedAt || '').split('T')[0] || new Date().toISOString().split('T')[0],
+          unit: p.diabetesType || p.diabetes_type || 'General',
           physician: 'Dr. Smith'
         }))
         setPatients(formattedPatients)
         setUseAPI(true)
-      } else {
-        // Fallback to mock data
+      } catch (e) {
+        // Fallback to mock data only if API fetch fails
         setPatients([
           { id: 1, name: 'John Doe', age: 45, status: 'Active', lastVisit: '2024-12-10', unit: 'Cardiology', physician: 'Dr. Reyes' },
           { id: 2, name: 'Jane Smith', age: 38, status: 'Active', lastVisit: '2024-12-08', unit: 'Primary Care', physician: 'Dr. Cho' },

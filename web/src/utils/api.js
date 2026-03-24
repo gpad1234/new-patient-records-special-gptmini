@@ -138,10 +138,10 @@ class PatientAPI {
     return response.json()
   }
 
-  // Check server health
+  // Check server health (use /api/health)
   static async checkHealth() {
     try {
-      const response = await fetch(`${API_BASE_URL}/health`, {
+      const response = await fetch(`${API_BASE_URL}/api/health`, {
         method: 'GET',
         signal: AbortSignal.timeout(2000)
       })

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-API_PORT=${API_PORT:-3001}
+API_PORT=${API_PORT:-5002}
 WEB_PORT=${WEB_PORT:-3000}
 
 echo "Starting local stack: API -> http://127.0.0.1:${API_PORT}, Web -> http://localhost:${WEB_PORT}"
