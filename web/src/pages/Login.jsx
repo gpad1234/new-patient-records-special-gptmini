@@ -4,6 +4,7 @@ import { Lock, Mail, User, AlertCircle } from 'lucide-react'
 
 export default function Login() {
 
+
   const navigate = useNavigate()
   // Bypass login only if window.BYPASS_LOGIN is true in the browser console
   useEffect(() => {
@@ -15,47 +16,20 @@ export default function Login() {
     }
   }, [navigate])
 
-  // The rest of the code is left for when login is re-enabled
-  /*
-  const [formData, setFormData] = useState({
-    username: '',
-    password: ''
-  })
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  // ...existing code for login form and handlers is commented out...
-  */
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
+  // Only show the login form if not bypassing
+  if (window.BYPASS_LOGIN) {
+    return null;
   }
 
-  // Demo credentials helper
-  const fillDemoCredentials = (role) => {
-    const credentials = {
-      admin: { username: 'admin', password: 'password123' },
-      doctor: { username: 'dr.smith', password: 'password123' },
-      nurse: { username: 'nurse.williams', password: 'password123' },
-      receptionist: { username: 'receptionist', password: 'password123' }
-    }
-    setFormData(credentials[role])
-  }
-
-  // Dev-only auto-login: sets a lightweight dev token and user
-  const autoDevLogin = () => {
-    try {
-      localStorage.setItem('token', 'dev')
-      localStorage.setItem('user', JSON.stringify({ username: 'dev', role: 'developer' }))
-      navigate('/')
-      window.location.reload()
-    } catch (e) {
-      console.error('Dev auto-login failed', e)
-    }
-  }
+  // Dummy error for compatibility with existing UI (never shown)
+  const error = undefined;
+  // Dummy handlers for compatibility (no-op)
+  const handleChange = () => {};
+  const handleSubmit = (e) => { e.preventDefault(); };
+  const loading = false;
+  const formData = { username: '', password: '' };
+  const fillDemoCredentials = () => {};
+  const autoDevLogin = () => {};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
