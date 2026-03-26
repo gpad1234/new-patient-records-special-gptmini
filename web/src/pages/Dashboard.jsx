@@ -79,10 +79,10 @@ export default function Dashboard() {
         <div className="card-content">
           <p className="dashboard-actions-helper">Need to act fast? Capture details or invite the team.</p>
           <div className="dashboard-actions-row">
-            <Link to="/api/patients/new" className="btn btn-primary">
+            <Link to="/patients/new" className="btn btn-primary">
               ➕ Add patient
             </Link>
-            <Link to="/api/patients" className="btn btn-secondary">
+            <Link to="/patients" className="btn btn-secondary">
               👥 View all patients
             </Link>
           </div>

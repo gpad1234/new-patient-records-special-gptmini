@@ -5,7 +5,7 @@
 set -e
 
 # Variables
-APP_DIR="$HOME/emr-app"
+APP_DIR="/home/sam/emr-app"
 REPO_URL="https://github.com/gpad1234/new-patient-records-special-gptmini.git"
 NODE_API_DIR="$APP_DIR/services/node-api"
 REACT_WEB_DIR="$APP_DIR/web"
@@ -23,7 +23,11 @@ if [ ! -d "$APP_DIR" ]; then
   git clone "$REPO_URL" "$APP_DIR"
 else
   cd "$APP_DIR"
-  git checkout hack-node-only
+  if [ ! -d .git ]; then
+    echo "WARNING: $APP_DIR exists but is not a git repository. Please check the directory contents!"
+  fi
+  git fetch --all
+  git checkout hack-node-only || (echo "ERROR: Branch hack-node-only not found. Please check your remote branches." && exit 1)
   git pull origin hack-node-only
 fi
 

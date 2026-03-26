@@ -18,7 +18,7 @@ if [ -f /etc/nginx/sites-available/emr-app ]; then
 fi
 
 # 3. Create new Nginx config for emr-app (React/Node)
-REACT_WEB_DIR="$HOME/emr-app/web"
+REACT_WEB_DIR="/home/sam/emr-app/web"
 cat <<EOF | sudo tee /etc/nginx/sites-available/emr-app
 server {
     listen 80;
