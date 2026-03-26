@@ -3,7 +3,18 @@ import { useNavigate, Link } from 'react-router-dom'
 import { Lock, Mail, User, AlertCircle } from 'lucide-react'
 
 export default function Login() {
+
   const navigate = useNavigate()
+  // Immediately bypass login and auto-login as demo user
+  useEffect(() => {
+    localStorage.setItem('token', 'demo')
+    localStorage.setItem('user', JSON.stringify({ username: 'demo', role: 'demo' }))
+    navigate('/')
+    window.location.reload()
+  }, [navigate])
+
+  // The rest of the code is left for when login is re-enabled
+  /*
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -11,48 +22,8 @@ export default function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      })
-
-      // Defensive parse: backend may sometimes return empty or non-JSON on error
-      const text = await response.text()
-      let data = {}
-      try {
-        data = text ? JSON.parse(text) : {}
-      } catch (e) {
-        console.error('Non-JSON login response:', text)
-        throw new Error('Invalid server response')
-      }
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed')
-      }
-
-      // Store auth data
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
-
-      // Redirect to dashboard
-      navigate('/')
-      window.location.reload() // Refresh to update auth state
-
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
+  // ...existing code for login form and handlers is commented out...
+  */
 
   const handleChange = (e) => {
     setFormData({
