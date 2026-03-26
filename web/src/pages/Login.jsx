@@ -1,22 +1,59 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Lock, Mail, User, AlertCircle } from 'lucide-react'
 
 export default function Login() {
 
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ username: '', password: '' });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const navigate = useNavigate()
-  useEffect(() => {
-    // Set a demo user and token, then redirect to dashboard
-    localStorage.setItem('token', 'demo')
-    localStorage.setItem('user', JSON.stringify({ username: 'demo', role: 'demo' }))
-    navigate('/')
-    // Optionally, force reload to update app state
-    window.location.reload()
-  }, [navigate])
+  // Handle input changes
+  function handleChange(e) {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  }
 
-  // Render nothing (no login form)
-  return null;
+  // Handle login form submit
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      // Replace with your actual login endpoint
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Login failed');
+      }
+      const data = await res.json();
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      navigate('/');
+      window.location.reload();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Fill demo credentials
+  function fillDemoCredentials(role) {
+    setFormData({ username: role, password: 'password123' });
+  }
+
+  // Skip login: set demo user/token and redirect
+  function skipLogin() {
+    localStorage.setItem('token', 'demo');
+    localStorage.setItem('user', JSON.stringify({ username: 'demo', role: 'demo' }));
+    navigate('/');
+    window.location.reload();
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -61,6 +98,7 @@ export default function Login() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
+
                 Password
               </label>
               <div className="relative">
@@ -87,6 +125,7 @@ export default function Login() {
           </form>
 
           {/* Demo Credentials */}
+
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <p className="text-xs font-semibold text-gray-600 mb-2">Demo Accounts:</p>
             <div className="grid grid-cols-2 gap-2">
@@ -94,8 +133,17 @@ export default function Login() {
                 onClick={() => fillDemoCredentials('admin')}
                 className="text-xs px-3 py-2 bg-white border border-gray-200 rounded hover:bg-gray-50 transition-colors"
               >
+          </form>
+
+          {/* Skip Login Button (always visible) */}
+          <button
+            type="button"
+            onClick={skipLogin}
+            className="w-full mt-4 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+          >
+            Skip Login (Demo)
+          </button>
                 Admin
-              </button>
               <button
                 onClick={() => fillDemoCredentials('doctor')}
                 className="text-xs px-3 py-2 bg-white border border-gray-200 rounded hover:bg-gray-50 transition-colors"
@@ -116,17 +164,7 @@ export default function Login() {
               </button>
             </div>
             <p className="text-xs text-gray-500 mt-2">All demo passwords: password123</p>
-            {import.meta.env.DEV && (
-              <div className="mt-3">
-                <button
-                  onClick={autoDevLogin}
-                  className="text-xs px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                >
-                  Auto login (dev)
-                </button>
-                <p className="text-xs text-gray-500 mt-2">Dev-only quick login — not shown in production</p>
-              </div>
-            )}
+            {/* Optionally, you can add dev-only quick login here if needed */}
           </div>
 
           {/* Register Link */}
