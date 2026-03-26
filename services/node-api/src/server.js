@@ -253,6 +253,7 @@ app.use('/api/auth', initAuthRoutes(db));
 app.use('/api/appointments', initAppointmentRoutes(db));
 
 // Get all patients with record counts
+/** 
 app.get('/api/patients', (req, res) => {
   const now = Date.now();
   if (patientsCache && (now - patientsCacheTime < PATIENTS_CACHE_TTL)) {
@@ -269,6 +270,29 @@ app.get('/api/patients', (req, res) => {
     LEFT JOIN medications m ON p.id = m.patientId
     GROUP BY p.id
     ORDER BY p.id DESC
+    LIMIT 15
+  `, (err, rows) => {
+    if (err) {
+      console.error('Error in /api/patients:', err);
+      return res.status(500).json({ error: err.message });
+    }
+    patientsCache = rows || [];
+    patientsCacheTime = Date.now();
+    res.json(patientsCache);
+  });
+});
+
+
+**/
+
+app.get('/api/patients', (req, res) => {
+  const now = Date.now();
+  if (patientsCache && (now - patientsCacheTime < PATIENTS_CACHE_TTL)) {
+    return res.json(patientsCache);
+  }
+  db.all(`
+    SELECT * FROM patients
+    ORDER BY id DESC
     LIMIT 15
   `, (err, rows) => {
     if (err) {
