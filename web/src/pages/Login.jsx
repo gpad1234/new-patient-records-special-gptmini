@@ -124,17 +124,6 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Demo Credentials */}
-
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-xs font-semibold text-gray-600 mb-2">Demo Accounts:</p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => fillDemoCredentials('admin')}
-                className="text-xs px-3 py-2 bg-white border border-gray-200 rounded hover:bg-gray-50 transition-colors"
-              >
-          </form>
-
           {/* Skip Login Button (always visible) */}
           <button
             type="button"
@@ -143,6 +132,39 @@ export default function Login() {
           >
             Skip Login (Demo)
           </button>
+
+          {/* Demo Credentials */}
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+            <p className="text-xs font-semibold text-gray-600 mb-2">Demo Accounts:</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={() => fillDemoCredentials('admin')}
+                className="text-xs px-3 py-2 bg-white border border-gray-200 rounded hover:bg-gray-50 transition-colors"
+              >
+                Admin
+              </button>
+              <button
+                onClick={() => fillDemoCredentials('doctor')}
+                className="text-xs px-3 py-2 bg-white border border-gray-200 rounded hover:bg-gray-50 transition-colors"
+              >
+                Doctor
+              </button>
+              <button
+                onClick={() => fillDemoCredentials('nurse')}
+                className="text-xs px-3 py-2 bg-white border border-gray-200 rounded hover:bg-gray-50 transition-colors"
+              >
+                Nurse
+              </button>
+              <button
+                onClick={() => fillDemoCredentials('receptionist')}
+                className="text-xs px-3 py-2 bg-white border border-gray-200 rounded hover:bg-gray-50 transition-colors"
+              >
+                Receptionist
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">All demo passwords: password123</p>
+            {/* Optionally, you can add dev-only quick login here if needed */}
+          </div>
                 Admin
               <button
                 onClick={() => fillDemoCredentials('doctor')}
