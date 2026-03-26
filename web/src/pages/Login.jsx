@@ -5,12 +5,14 @@ import { Lock, Mail, User, AlertCircle } from 'lucide-react'
 export default function Login() {
 
   const navigate = useNavigate()
-  // Immediately bypass login and auto-login as demo user
+  // Bypass login only if window.BYPASS_LOGIN is true in the browser console
   useEffect(() => {
-    localStorage.setItem('token', 'demo')
-    localStorage.setItem('user', JSON.stringify({ username: 'demo', role: 'demo' }))
-    navigate('/')
-    window.location.reload()
+    if (window.BYPASS_LOGIN) {
+      localStorage.setItem('token', 'demo')
+      localStorage.setItem('user', JSON.stringify({ username: 'demo', role: 'demo' }))
+      navigate('/')
+      window.location.reload()
+    }
   }, [navigate])
 
   // The rest of the code is left for when login is re-enabled

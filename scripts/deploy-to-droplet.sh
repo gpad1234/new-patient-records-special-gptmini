@@ -23,7 +23,8 @@ if [ ! -d "$APP_DIR" ]; then
   git clone "$REPO_URL" "$APP_DIR"
 else
   cd "$APP_DIR"
-  git pull
+  git checkout node-only
+  git pull origin node-only
 fi
 
 # 4. Build and start backend
