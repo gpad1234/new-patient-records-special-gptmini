@@ -165,10 +165,6 @@ export default function Login() {
             <p className="text-xs text-gray-500 mt-2">All demo passwords: password123</p>
             {/* Optionally, you can add dev-only quick login here if needed */}
           </div>
-            </div>
-            <p className="text-xs text-gray-500 mt-2">All demo passwords: password123</p>
-            {/* Optionally, you can add dev-only quick login here if needed */}
-          </div>
 
           {/* Register Link */}
           <div className="mt-6 text-center">
