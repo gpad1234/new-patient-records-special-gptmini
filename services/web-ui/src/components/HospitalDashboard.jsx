@@ -63,8 +63,8 @@ export default function HospitalDashboard({ patients }) {
       </div>
 
       <div className="quick-actions">
-        <a href="/patients/new" className="btn-primary">+ Add New Patient</a>
-        <a href="/patients" className="btn-secondary">View All Patients</a>
+        <a href="/api/patients/new" className="btn-primary">+ Add New Patient</a>
+        <a href="/api/patients" className="btn-secondary">View All Patients</a>
       </div>
 
       <div className="recent-patients">

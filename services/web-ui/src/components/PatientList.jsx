@@ -98,7 +98,7 @@ export default function PatientList({ loading, onRefresh }) {
                     <span className="badge">{(patient.glucoseRecords || 0) + (patient.labResults || 0) + (patient.medications || 0)} records</span>
                   </td>
                   <td>
-                    <Link to={`/patients/${patient.id}/records`} className="btn-link">View Records</Link>
+                    <Link to={`/api//patients/${patient.id}/records`} className="btn-link">View Records</Link>
                   </td>
                 </tr>
               ))}

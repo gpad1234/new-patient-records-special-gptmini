@@ -26,9 +26,9 @@ export default function Navigation() {
         </button>
         <ul className={`nav-menu ${isMenuOpen ? 'active' : ''}`}>
           <li><Link to="/" onClick={closeMenu}>Dashboard</Link></li>
-          <li><Link to="/patients" onClick={closeMenu}>Patients</Link></li>
+          <li><Link to="/api/patients" onClick={closeMenu}>Patients</Link></li>
           {config.ALLOW_ADD_PATIENT ? (
-            <li><Link to="/patients/new" onClick={closeMenu}>Add Patient</Link></li>
+            <li><Link to="/api/patients/new" onClick={closeMenu}>Add Patient</Link></li>
           ) : (
             <li><Link to="/admin/seed" onClick={closeMenu}>Import / Test Data</Link></li>
           )}

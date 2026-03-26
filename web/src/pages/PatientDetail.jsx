@@ -71,7 +71,7 @@ export default function PatientDetail() {
     return (
       <div className="page-container">
         <div className="alert alert-error">{error}</div>
-        <Link to="/patients" className="btn btn-secondary">
+        <Link to="/api/patients" className="btn btn-secondary">
           Back to Patients
         </Link>
       </div>
@@ -82,7 +82,7 @@ export default function PatientDetail() {
     return (
       <div className="page-container">
         <div className="alert alert-error">Patient not found</div>
-        <Link to="/patients" className="btn btn-secondary">
+        <Link to="/api/patients" className="btn btn-secondary">
           Back to Patients
         </Link>
       </div>
