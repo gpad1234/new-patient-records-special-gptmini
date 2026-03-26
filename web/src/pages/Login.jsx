@@ -16,20 +16,89 @@ export default function Login() {
     }
   }, [navigate])
 
-  // Only show the login form if not bypassing
+  // If bypassing, don't render the login form at all
   if (window.BYPASS_LOGIN) {
     return null;
   }
 
-  // Dummy error for compatibility with existing UI (never shown)
-  const error = undefined;
-  // Dummy handlers for compatibility (no-op)
-  const handleChange = () => {};
-  const handleSubmit = (e) => { e.preventDefault(); };
-  const loading = false;
-  const formData = { username: '', password: '' };
-  const fillDemoCredentials = () => {};
-  const autoDevLogin = () => {};
+  // Restore full login functionality
+  const [formData, setFormData] = useState({
+    username: '',
+    password: ''
+  })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
+  }
+
+  const fillDemoCredentials = (role) => {
+    const credentials = {
+      admin: { username: 'admin', password: 'password123' },
+      doctor: { username: 'dr.smith', password: 'password123' },
+      nurse: { username: 'nurse.williams', password: 'password123' },
+      receptionist: { username: 'receptionist', password: 'password123' }
+    }
+    setFormData(credentials[role])
+  }
+
+  const autoDevLogin = () => {
+    try {
+      localStorage.setItem('token', 'dev')
+      localStorage.setItem('user', JSON.stringify({ username: 'dev', role: 'developer' }))
+      navigate('/')
+      window.location.reload()
+    } catch (e) {
+      console.error('Dev auto-login failed', e)
+    }
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      })
+
+      // Defensive parse: backend may sometimes return empty or non-JSON on error
+      const text = await response.text()
+      let data = {}
+      try {
+        data = text ? JSON.parse(text) : {}
+      } catch (e) {
+        console.error('Non-JSON login response:', text)
+        throw new Error('Invalid server response')
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed')
+      }
+
+      // Store auth data
+      localStorage.setItem('token', data.token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+
+      // Redirect to dashboard
+      navigate('/')
+      window.location.reload() // Refresh to update auth state
+
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
